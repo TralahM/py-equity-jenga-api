@@ -17,7 +17,7 @@
 
 # Documentation
 
-[![Documentation](https://img.shields.io/badge/Docs-py_equity_jenga_api-blue.svg?style=for-the-badge)](https://equity-jenga-api-readthedocs.io)
+[![Documentation](https://img.shields.io/badge/Docs-py_equity_jenga_api-blue.svg?style=for-the-badge)](https://equity-jenga-api.readthedocs.io)
 
 # How to Install
 ```bash
