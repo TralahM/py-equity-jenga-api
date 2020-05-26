@@ -11,8 +11,8 @@ class JengaAuth:
         private_key: str,
         merchant_code: str,
         env: str,
-        sandbox_url: str,
-        live_url: str,
+        sandbox_url="https://sandbox.jengahq.io",
+        live_url="",
         *args,
         **kwargs
     ):
@@ -30,26 +30,6 @@ class JengaAuth:
         self.live_url = live_url
         self.private_key = private_key
         self.merchant_code = merchant_code
-
-    def authenticate(self, *args, **kwargs):
-        """
-        Returns a dict of authentication headers required for authentication
-        Example:
-        **Headers**
-        :Authorization: the bearer token used to access the API
-        :signature: A SHA-256 signature to proof that this request
-        is coming from the merchant.
-
-
-        The Authentication Method should be implemented by each Subclass
-        to meet the required authentication for its use case
-        as some require additional fields to be included in the generation of
-        the signature
-
-        """
-        return {
-            "Authorization": self.authorization_token,
-        }
 
     def signature(self, request_hash_fields: tuple):
         """
