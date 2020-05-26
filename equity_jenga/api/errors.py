@@ -1,6 +1,6 @@
 """
 Generic Error
-{ 
+{
    "response_status": "error",
    "response_code": "500101",
    "response_msg": "Generic error. Please contact our support."
@@ -8,7 +8,7 @@ Generic Error
 Syntax Error
 400 Bad Request
 
-{ 
+{
    "response_status": "invalid_request_error",
    "response_code": "500102",
    "response_msg": "{$.message}"
@@ -16,7 +16,7 @@ Syntax Error
 
 401 Unauthorized
 
-{ 
+{
    "response_status": "unauthorized",
    "response_code": "500103",
    "response_msg": "Unauthorized - Please check your Bearer token."
@@ -24,7 +24,7 @@ Syntax Error
 
 404 Not Found
 
-{ 
+{
    "response_status": "not_found",
    "response_code": "500104",
    "response_msg": "Resource not found"
@@ -32,7 +32,7 @@ Syntax Error
 
 500 Internal Server Error
 
-{ 
+{
    "response_status": "internal_server_error",
    "response_code": "500105",
    "response_msg": "Internal Server Error - Please try again later."
@@ -42,7 +42,7 @@ Target Error
 
 200 OK
 
-{ 
+{
    "response_status": "error",
    "response_code": "{$.response code}",
    "response_msg": "{$.message}"
@@ -290,3 +290,23 @@ error	110101	Invalid merchant code
 error	110102	Invalid request data. Please check your payload
 error	110103	bill doesn’t exist
 """
+
+
+def handle_response(response):
+    if response["response_status"] == "error":
+        raise Exception(response["response_code"] +
+                        " : " + response["response_msg"])
+    elif response["response_status"] == "invalid_request_error":
+        raise Exception(response["response_code"] +
+                        " : " + response["response_msg"])
+    elif response["response_status"] == "unauthorized":
+        raise Exception(response["response_code"] +
+                        " : " + response["response_msg"])
+    elif response["response_status"] == "internal_server_error":
+        raise Exception(response["response_code"] +
+                        " : " + response["response_msg"])
+    elif response["response_status"] == "not_found":
+        raise Exception(response["response_code"] +
+                        " : " + response["response_msg"])
+    else:
+        return response
