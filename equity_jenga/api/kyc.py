@@ -6,7 +6,7 @@ https://sandbox.jengahq.io/customer-test/v2/identity/verify
 """
 import requests
 from .auth import JengaAuth
-from .error import handle_response
+from .exceptions import handle_response
 
 
 class IDSearchVerification(JengaAuth):
@@ -110,3 +110,6 @@ class IDSearchVerification(JengaAuth):
                 }
             }
         """
+        documentNumber = identity.get("documentNumber")
+        countryCode = identity.get("countryCode")
+        merchantCode = self.merchant_code
