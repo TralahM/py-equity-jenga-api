@@ -10,6 +10,8 @@ Welcome to equity-jenga-api's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+   Overview <getting_started.rst>
+   API Reference <api.rst>
 
 
 Indices and tables
