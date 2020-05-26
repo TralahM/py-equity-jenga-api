@@ -4,53 +4,72 @@ Currently available for Kenya and Rwanda only.
 
 https://sandbox.jengahq.io/customer-test/v2/identity/verify
 """
+import requests
 from .auth import JengaAuth
+from .error import handle_response
 
 
 class IDSearchVerification(JengaAuth):
-    def authenticate(self):
+    def authenticate(self, merchantCode, documentNumber, countryCode):
         """
-        Headers:
+        **Params**
+        :merchantCode: Your MerchantCode
+        :documentNumber: Document Number to Verify
+        :countryCode: The Country Code
 
-        Authorization* string
+
+        **Returns**
+        :Headers:
+
+        :Authorization: string
         the bearer token used to access the API
 
-        Content-Type: string
+        :Content-Type: string
         the content type of the payload
 
-        signature: string
-        A SHA-256 signature to proof that this request is coming from the merchant.
-        Build a String of concatenated values of the request fields with the following order: merchantcode documentNumber countryCode.
+        :signature: string
+        A SHA-256 signature to proof that this request is coming from the
+        merchant.
+        Build a String of concatenated values of the request fields with
+        the following order: merchantcode documentNumber countryCode.
         The resulting text is then signed with Private Key and Base64 encoded.
+
+        Should return the headers to pass to the particular endpoint
         """
-        pass
+        return {
+            "Authorization": self.authorization_token,
+            "Content-Type": "application/json",
+            "signature": self.signature((merchantCode, documentNumber, countryCode)),
+        }
 
     def verify(identity: dict):
         """
         Params:
-        identitiy:
-            documentType: string
+        :identitiy:
+            :documentType: string
             the document type of the customer.
             for example ID, PASSPORT, ALIENID
 
-            firstName: string
+            :firstName: string
             first name as per identity document type
 
-            lastName: string
+            :lastName: string
             last name as per identity document type
 
-            dateOfBirth: string optional
+            :dateOfBirth: string optional
             date in YYYY-MM-DD format
 
-            documentNumber: string
+            :documentNumber: string
             the document id number
 
-            countryCode: string
-            the country in which the document relates to (only KE and RW enabled for now)
+            :countryCode: string
+            the country in which the document relates to
+            (only KE and RW enabled for now)
 
 
         Example Reponse
-        .. code-block: json
+
+        .. code-block:: json
 
             {
                 "identity": {
