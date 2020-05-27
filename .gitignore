@@ -109,3 +109,4 @@ env/
 .idea/
 
 .*~
+pip-wheel-metadata/
