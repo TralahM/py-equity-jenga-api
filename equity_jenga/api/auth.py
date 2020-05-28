@@ -53,6 +53,10 @@ class JengaAuth:
 
 
 def generate_key_pair():
+    """
+    Generates a Public/Public RSA Key Pair which is store in the current User's
+    **HOME** directory  under the **.JengaAPI/keys/** Directory
+    """
     import os
 
     home_dir = os.path.expanduser("~")
