@@ -1,7 +1,9 @@
 import requests
 import sys
+import os
 
-sys.path.append("..")
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+
 try:
     from exceptions import handle_response
     from auth import JengaAuth
@@ -24,12 +26,21 @@ class AccountBalance(JengaAuth):
 
         200 Success Response Schema
 
-        ========    ======  =======================
-        currency	string	account currency
-        balances	array	array of balances
-        amount	    string	account balance
-        type	    string	account balance type
-        ========    ======  =======================
+        .. code-block:: json
+
+            {
+                "currency": "KES",
+                "balances": [
+                    {
+                        "amount": "997382.57",
+                        "type": "Current"
+                    },
+                    {
+                        "amount": "997382.57",
+                        "type": "Available"
+                    }
+                ]
+            }
 
         """
         headers = self.authenticate(countryCode, accountId)

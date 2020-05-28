@@ -1,7 +1,8 @@
 import requests
 import sys
+import os
 
-sys.path.append("..")
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 try:
     from exceptions import handle_response
     from auth import JengaAuth
@@ -21,17 +22,45 @@ class MiniStatement(JengaAuth):
 
     def retrieve(self, countryCode, accountNumber):
         """
-        =============   ========    ============================================================
-        accountNumber  	string  	account number
-        currency	    string  	account currency
-        balance  	    string  	account balance
-        transactions	array	    transactions list
-        date        	string	    transaction date
-        chequeNumber	string	    cheque number. Applicable to current accounts only
-        description 	string	    transaction description
-        amount	        string	    transaction amount
-        type	        string	    transaction type
-        =============   ========    ============================================================
+        Example Response
+
+        .. code-block:: json
+
+            {
+                "accountNumber": "0011547896523",
+                "currency": "KES",
+                "balance": 1000,
+                "transactions": [
+                    {
+                        "chequeNumber": null,
+                        "date": "2017-01-01T00:00:00",
+                        "description": "EAZZY-FUNDS TRNSF TO A/C XXXXXXXXXXXX",
+                        "amount": "100",
+                        "type": "Debit"
+                    },
+                    {
+                        "chequeNumber": null,
+                        "date": "2017-01-03T00:00:00",
+                        "description": "SI ACCOUNT TO ACCOUNT THIRD PA",
+                        "amount": "51",
+                        "type": "Debit"
+                    },
+                    {
+                        "chequeNumber": null,
+                        "date": "2017-01-05T00:00:00",
+                        "description": "CHARGE FOR OTC ECS TRAN",
+                        "amount": "220",
+                        "type": "Debit"
+                    },
+                    {
+                        "chequeNumber": null,
+                        "date": "2017-01-05T00:00:00",
+                        "description": "SI ACCOUNT TO ACCOUNT THIRD PA",
+                        "amount": "20",
+                        "type": "Debit"
+                    }
+                ]
+            }
         """
         headers = self.authenticate(countryCode, accountNumber)
         if self.env == "sandbox":

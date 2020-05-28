@@ -1,10 +1,12 @@
 import requests
 import sys
+import os
 
-sys.path.append("..")
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+
 try:
-    from exceptions import handle_response
     from auth import JengaAuth
+    from exceptions import handle_response
 except ModuleNotFoundError as e:
     print(e)
 
@@ -19,18 +21,29 @@ class AccountInquiry(JengaAuth):
             "signature": self.signature((countryCode, accountNumber)),
         }
 
-    def get_account_details(self, countryCode, accountNumber):
+    def account_details(self, countryCode, accountNumber):
         """
-        ========    ========    ============================================================
-        account 	object  	account object
-        number  	string  	account number
-        currency	string  	account currency
-        status	    string  	account status. Could be one of; Active,Inactive or Dormant
-        customer	object  	customer list
-        id	        string   	customer identifier
-        name	    string  	customer account name
-        type	    string  	customer type
-        ========    ========    ============================================================
+        Example Response
+
+        .. code-block:: json
+
+            {
+                "account": {
+                    "number": "0011547896523",
+                    "branchCode": "017",
+                    "currency": "KES",
+                    "status": "Active"
+                },
+                "customer": [
+                    {
+                        "id": "100200300",
+                        "name": "A N.Other",
+                        "type": "Retail"
+                    }
+                ]
+            }
+
+
         """
         headers = self.authenticate(countryCode, accountNumber)
         if self.env == "sandbox":
