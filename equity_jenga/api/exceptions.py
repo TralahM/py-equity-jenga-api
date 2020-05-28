@@ -340,6 +340,10 @@ import requests
 
 
 def handle_response(response):
+    """
+    Handles Responses From the JengaHQ API and Raises Exceptions appropriately
+    as errors occur and returns a `dict` object from the `json` response
+    """
     response.response_status()
     resp = response.json()
     if resp["response_status"] == "error":
