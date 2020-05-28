@@ -30,7 +30,7 @@ equity\_jenga.api.account_services.statements
 
 equity\_jenga.api.account_services.inquiries
 ----------------------------------------------
-.. automodule:: equity_jenga.api.auth
+.. automodule:: equity_jenga.api.account_services.inquiries
    :members:
    :undoc-members:
    :show-inheritance:
@@ -52,10 +52,3 @@ equity\_jenga.api.exceptions
    :show-inheritance:
 
 
-Module contents
-----------------
-
-.. automodule:: equity_jenga.api
-    :members:
-    :undoc-members:
-    :show-inheritance:
