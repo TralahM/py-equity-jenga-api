@@ -22,7 +22,7 @@ sys.path.insert(0, os.path.abspath("../equity_jenga/"))
 project = "equity-jenga-api"
 copyright = "2020, Tralah M Brian"
 author = "Tralah M Brian"
-
+show_authors = True
 
 # -- General configuration ---------------------------------------------------
 
