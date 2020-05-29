@@ -6,6 +6,43 @@ from Crypto.Hash import SHA256
 
 
 class JengaAuth:
+    """
+    Jenga Base Authentication Class
+
+    **Params**
+
+    :authorization_token:: the bearer token used to access the API, i.e  apiKey
+    :merchant_code:: the merchant code provided by JengaHQ
+    :private_key:: the path to the merchant private key default is "~/.JengaAPI/keys/privatekey.pem"
+    :env:: the environment in which  the API is to be used either *sandbox* or *production*
+    :sandbox_url:: the url used to access the Sandbox API
+    :live_url:: the url used to access the Production API
+
+    **Example**
+
+    .. code-block:: python
+
+        from equity_jenga import api
+        jengabase = api.auth.JengaApi(
+        authorization_token="Bearer TofFGUeU9y448idLCKVAe35LmAtL",
+        merchant_code="4144142283",
+        env="sandbox",
+        )
+        # Similarly for all classes Inheriting from JengaAuth
+        acc_Bal = api.auth.account_services.balances.AccountBalance(
+        authorization_token="Bearer TofFGUeU9y448idLCKVAe35LmAtL",
+        merchant_code="4144142283",
+        env="sandbox",
+        )
+        # Get Available Balances
+        available_bal=acc_Bal.available(countryCode='KE',accountId="0011547896523")
+        print(available_bal)
+        # Opening and Closing Balances
+        opening_and_closing_bal=acc_Bal.get_opening_and_closing(accountId="0011547896523"countryCode='KE',date="2020-03-21")
+        print(opening_and_closing_bal)
+
+    """
+
     def __init__(
         self,
         authorization_token: str,
@@ -14,8 +51,6 @@ class JengaAuth:
         private_key=os.path.expanduser("~") + "/.JengaApi/keys/privatekey.pem",
         sandbox_url="https://sandbox.jengahq.io",
         live_url="",
-        *args,
-        **kwargs,
     ):
         """
         :authorization_token: the bearer token used to access the API

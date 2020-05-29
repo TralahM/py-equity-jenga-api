@@ -7,7 +7,7 @@ Welcome to equity-jenga-api's documentation!
 ============================================
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
    :caption: Contents:
 
    Overview <getting_started.rst>
