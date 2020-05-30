@@ -352,3 +352,15 @@ def handle_response(response):
         )
     else:
         return response.json()
+
+
+def generate_reference() -> str:
+    """
+    Generate a transaction reference
+    Should always be a 12 digit String
+    """
+    import datetime
+
+    a = datetime.datetime.now()
+    ref = "".join(str(a).replace(" ", "").replace("-", "").split(":")[0:2])
+    return ref
