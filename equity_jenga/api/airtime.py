@@ -26,26 +26,36 @@ class Airtime(JengaAuth):
     def purchase_airtime(self, customer: dict, airtime: dict) -> dict:
         """
         Example Request
-        :countryCode:: the telco's ISO country code
-        :mobileNumber:: the mobile number you are purchasing airtime for
 
-        :Telco:: the telco/provider. For example: Equitel, Safaricom , Airtel.
-        :reference:: your transaction references. Should always be a 12 digit string
-        :amount:: the airtime amount string
+        :Customer::
 
         .. code-block:: json
 
             {
-                "customer": {
-                    "countryCode": "KE",
-                    "mobileNumber": "0765555131"
-                },
-                "airtime": {
-                    "amount": "100",
-                    "reference": "692194625798",
-                    "telco": "Equitel"
-                }
+                "countryCode": "KE",
+                "mobileNumber": "0765555131"
             }
+
+        *countryCode*: the telco's ISO country code
+
+        *mobileNumber*: the mobile number you are purchasing airtime for
+
+        :Airtime::
+
+
+        .. code-block:: json
+
+            {
+                "amount": "100",
+                "reference": "692194625798",
+                "telco": "Equitel"
+            }
+
+        *telco* the telco/provider. For example: Equitel, Safaricom , Airtel.
+
+        *reference* your transaction references. Should always be a 12 digit string
+
+        *amount* the airtime amount string
 
 
         Example Response
@@ -73,4 +83,7 @@ class Airtime(JengaAuth):
             url = self.sandbox_url + "/transaction-test/v2/airtime"
             response = requests.post(url=url, headers=headers, data=payload)
             return handle_response(response)
-        pass
+        else:
+            url = self.live_url + "/transaction-test/v2/airtime"
+            response = requests.post(url=url, headers=headers, data=payload)
+            return handle_response(response)
