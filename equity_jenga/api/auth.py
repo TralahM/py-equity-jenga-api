@@ -1,20 +1,29 @@
 import base64
 import os
+import requests
 from Crypto.PublicKey import RSA
 from Crypto.Signature import PKCS1_v1_5
 from Crypto.Hash import SHA256
+from .exceptions import handle_response
 
 
 class JengaAuth:
     """
     Jenga Base Authentication Class
 
+    Jenga Payment Gateway and Jenga API support the OAuth 2.0 Authentication Framework, requiring you to provide a username and password, as well as an API key that you generate on Jenga HQ part of HTTP Basic Authentication to generate a Bearer token.
+
+    Once you have a token you can make subsequent requests to initiate payments, check completed transactions and more.
+
+    Only load your API keys as environment variables and do not share your credentials to anyone over email or any other method of communication.
+
     **Params**
 
-    :authorization_token:: the bearer token used to access the API, i.e  apiKey
+    :api_key: Your Jenga API Key
+    :password: Your Jenga API Password
     :merchant_code:: the merchant code provided by JengaHQ
-    :private_key:: the path to the merchant private key default is "~/.JengaAPI/keys/privatekey.pem"
     :env:: the environment in which  the API is to be used either *sandbox* or *production*
+    :private_key:: the path to the merchant private key default is "~/.JengaAPI/keys/privatekey.pem"
     :sandbox_url:: the url used to access the Sandbox API
     :live_url:: the url used to access the Production API
 
@@ -24,48 +33,59 @@ class JengaAuth:
 
         from equity_jenga import api
         jengabase = api.auth.JengaApi(
-        authorization_token="Bearer TofFGUeU9y448idLCKVAe35LmAtL",
+        api_key="Basic TofFGUeU9y448idLCKVAe35LmAtLU9y448idLCKVAe35LmAtL",
+        password="TofFGUeU9y448idLCKVAe35LmAtL",
         merchant_code="4144142283",
         env="sandbox",
         )
-        # Similarly for all classes Inheriting from JengaAuth
-        acc_Bal = api.auth.account_services.balances.AccountBalance(
-        authorization_token="Bearer TofFGUeU9y448idLCKVAe35LmAtL",
-        merchant_code="4144142283",
-        env="sandbox",
-        )
-        # Get Available Balances
-        available_bal=acc_Bal.available(countryCode='KE',accountId="0011547896523")
-        print(available_bal)
-        # Opening and Closing Balances
-        opening_and_closing_bal=acc_Bal.get_opening_and_closing(accountId="0011547896523"countryCode='KE',date="2020-03-21")
-        print(opening_and_closing_bal)
 
     """
 
     def __init__(
         self,
-        authorization_token: str,
+        api_key: str,
+        password: str,
         merchant_code: str,
         env: str,
         private_key=os.path.expanduser("~") + "/.JengaApi/keys/privatekey.pem",
         sandbox_url="https://sandbox.jengahq.io",
-        live_url="",
+        live_url="https://api.jengahq.io",
     ):
         """
-        :authorization_token: the bearer token used to access the API
-        :merchant_code: the merchant code provided by JengaHQ
-        :private_key: the path to the merchant private key
-        :env: the environment in which  the API is to be used
-        :sandbox_url: the url used to access the Sandbox API
-        :live_url: the url used to access the Production API
 
         """
-        self.authorization_token = authorization_token
+        self.api_key = api_key
+        self._username = merchant_code
+        self._password = password
         self.sandbox_url = sandbox_url
         self.live_url = live_url
         self.private_key = private_key
         self.merchant_code = merchant_code
+
+    @property
+    def authorization_token(self):
+        """
+        .. code-block:: json
+
+            {
+            "token_type": "bearer",
+            "issued_at": "1443102144106",
+            "expires_in": "3599",
+            "access_token": "ceTo5RCpluTfGn9B3OZXnnQkDVKM"
+            }
+
+        Returns a str like "Bearer ceTo5RCpluTfGn9B3OZXnnQkDVKM"
+
+        """
+        if self.env == "sandbox":
+            url = self.sandbox_url + "/identity-test/v2/token"
+        else:
+            url = self.live_url + "/identity-test/v2/token"
+        headers = {"Authorization": self.api_key}
+        body = dict(username=self._username, password=self._password)
+        response = requests.post(url, headers=headers, data=body)
+        response = handle_response(response)
+        return "Bearer " + response.get("access_token")
 
     def signature(self, request_hash_fields: tuple):
         """
