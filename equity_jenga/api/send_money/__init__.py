@@ -1,0 +1,12 @@
+TransferTypes={
+    'InternalFundsTransfer':'InternalFundsTransfer',
+    'MobileWallet':'MobileWallet',
+    'RTGS':'RTGS',
+    'SWIFT':'SWIFT',
+    'ETS':'ETS',
+    'PesaLink':'PesaLink',
+}
+DestinationTypes={
+    'mobile':'mobile',
+    'bank':'bank',
+}
