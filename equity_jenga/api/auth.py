@@ -9,7 +9,7 @@ from .exceptions import handle_response
 
 class JengaAuth:
     """
-    Jenga Base Authentication Class
+    Jenga API CORE  Class Representation
 
     Jenga Payment Gateway and Jenga API support the OAuth 2.0 Authentication Framework, requiring you to provide a username and password, as well as an API key that you generate on Jenga HQ part of HTTP Basic Authentication to generate a Bearer token.
 
@@ -107,6 +107,10 @@ class JengaAuth:
         return base64.b64encode(sign)
 
     def get_pesalink_linked_accounts(self, mobile_number):
+        """
+        This webservice returns the recipients’ Linked Banks linked to the
+        provided phone number on PesaLink
+        """
         headers = {
             "Authorization": self.authorization_token,
             "Content-Type": "application/json",
@@ -122,6 +126,9 @@ class JengaAuth:
         return handle_response(response)
 
     def get_transaction_status(self, requestId, transferDate):
+        """
+        Use this API to check the status of a B2C transaction
+        """
         headers = {
             "Authorization": self.authorization_token,
             "Content-Type": "application/json",
@@ -139,6 +146,9 @@ class JengaAuth:
         return handle_response(response)
 
     def get_all_eazzypay_merchants(self, numPages=1, per_page=10):
+        """
+        This webservice returns all EazzyPay merchants .
+        """
         headers = {"Authorization": self.authorization_token}
         params = {"page": numPages, "per_page": per_page}
         if self.env == "sandbox":
@@ -149,6 +159,9 @@ class JengaAuth:
         return handle_response(response)
 
     def get_all_billers(self, numPages=1, per_page=10):
+        """
+        This web service returns a paginated list of all billers
+        """
         headers = {"Authorization": self.authorization_token}
         params = {"page": numPages, "per_page": per_page}
         if self.env == "sandbox":
@@ -159,6 +172,11 @@ class JengaAuth:
         return handle_response(response)
 
     def get_payment_status(self, transactionReference):
+        """
+        The webservice enables an application track the status of a payment
+        that is linked to the Receive Payments - Eazzypay Push web service
+        especially in failure states.
+        """
         headers = {"Authorization": self.authorization_token}
         if self.env == "sandbox":
             url = (
@@ -172,6 +190,10 @@ class JengaAuth:
         return handle_response(response)
 
     def get_transaction_details(self, transactionReference):
+        """
+        This webservice enables an application or service to query a
+        transactions details and status
+        """
         headers = {"Authorization": self.authorization_token}
         if self.env == "sandbox":
             url = (
