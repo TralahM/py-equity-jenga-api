@@ -922,6 +922,233 @@ class JengaAuth:
         response = requests.post(url=url, headers=headers, data=data)
         return handle_response(response)
 
+    def get_account_available_balance(self, countryCode, accountId) -> dict:
+        """
+        Retrieve the current and available balance of an account
+
+        200 Success Response Schema
+
+        .. code-block:: json
+
+            {
+                "currency": "KES",
+                "balances": [
+                    {
+                        "amount": "997382.57",
+                        "type": "Current"
+                    },
+                    {
+                        "amount": "997382.57",
+                        "type": "Available"
+                    }
+                ]
+            }
+
+        """
+        headers = {
+            "Authorization": self.authorization_token,
+            "signature": self.signature((countryCode, accountId)),
+        }
+        if self.env == "sandbox":
+            resource = f"/account-test/v2/accounts/balances/{countryCode}/{accountId}"
+            url = self.sandbox_url + resource
+        else:
+            resource = f"/account/v2/accounts/balances/{countryCode}/{accountId}"
+            url = self.live_url + resource
+        response = requests.get(url, headers=headers)
+        return handle_response(response)
+
+    def get_account_opening_and_closing_balance(self, accountId, countryCode, date):
+        """
+        Example Request
+
+        .. code-block:: json
+
+            {
+            "countryCode": "KE",
+            "accountId": "0011547896523",
+            "date": "2017-09-29"
+            }
+
+
+        Example Response
+
+        .. code-block:: json
+
+                {
+                    "balances": [
+                        {
+                            "type": "Closing Balance",
+                            "amount": "10810.00"
+                        },
+                        {
+                            "type": "Opening Balance",
+                            "amount": "103.00"
+                        }
+                    ]
+                }
+
+        """
+        headers = {
+            "Authorization": self.authorization_token,
+            "signature": self.signature((accountId, countryCode, date)),
+        }
+        data = {
+            "countryCode": countryCode,
+            "accountId": accountId,
+            "date": date,
+        }
+        if self.env == "sandbox":
+            resource = "/account-test/v2/accounts/accountbalance/query"
+            url = self.sandbox_url + resource
+        else:
+            resource = "/account/v2/accounts/accountbalance/query"
+            url = self.live_url + resource
+        response = requests.post(url, headers=headers, data=data)
+        return handle_response(response)
+
+    def get_account_mini_statement(self, countryCode, accountNumber):
+        """
+        Example Response
+
+        .. code-block:: json
+
+            {
+                "accountNumber": "0011547896523",
+                "currency": "KES",
+                "balance": 1000,
+                "transactions": [
+                    {
+                        "chequeNumber": null,
+                        "date": "2017-01-01T00:00:00",
+                        "description": "EAZZY-FUNDS TRNSF TO A/C XXXXXXXXXXXX",
+                        "amount": "100",
+                        "type": "Debit"
+                    },
+                    {
+                        "chequeNumber": null,
+                        "date": "2017-01-03T00:00:00",
+                        "description": "SI ACCOUNT TO ACCOUNT THIRD PA",
+                        "amount": "51",
+                        "type": "Debit"
+                    },
+                    {
+                        "chequeNumber": null,
+                        "date": "2017-01-05T00:00:00",
+                        "description": "CHARGE FOR OTC ECS TRAN",
+                        "amount": "220",
+                        "type": "Debit"
+                    },
+                    {
+                        "chequeNumber": null,
+                        "date": "2017-01-05T00:00:00",
+                        "description": "SI ACCOUNT TO ACCOUNT THIRD PA",
+                        "amount": "20",
+                        "type": "Debit"
+                    }
+                ]
+            }
+        """
+        headers = {
+            "Authorization": self.authorization_token,
+            "Content-Type": "application/json",
+            "signature": self.signature((countryCode, accountNumber)),
+        }
+        if self.env == "sandbox":
+            resource = (
+                f"/account-test/v2/accounts/ministatement/{countryCode}/{accountNumber}"
+            )
+            url = self.sandbox_url + resource
+        else:
+            resource = (
+                f"/account/v2/accounts/ministatement/{countryCode}/{accountNumber}"
+            )
+            url = self.live_url + resource
+        response = requests.get(url, headers=headers)
+        return handle_response(response)
+
+    def get_account_full_statement(
+        self, countryCode, accountNumber, fromDate, toDate, limit=10
+    ):
+        """
+
+        Example Response
+
+        .. code-block:: json
+
+            {
+                "accountNumber": "0011547896523",
+                "currency": "KES",
+                "balance": 997382.57,
+                "transactions": [
+                    {
+                        "reference": 541,
+                        "date": "2018-07-13T00:00:00.000",
+                        "description": "EQUITEL-BUNDLE/254764555383/8755",
+                        "amount": 900,
+                        "serial": 1,
+                        "postedDateTime": "2018-07-13T09:51:27.000",
+                        "type": "Debit",
+                        "runningBalance": {
+                            "currency": "KES",
+                            "amount": 1344.57
+                        }
+                    },
+                    {
+                        "reference": "S4921027",
+                        "date": "2018-07-18T00:00:00.000",
+                        "description": "EAZZY-AIRTIME/EQUITEL/254764555383/100000939918/18",
+                        "amount": 200,
+                        "serial": 1,
+                        "postedDateTime": "2018-07-18T16:27:18.000",
+                        "type": "Debit",
+                        "runningBalance": {
+                            "currency": "KES",
+                            "amount": 1144.57
+                        }
+                    },
+                    {
+                        "reference": 5436,
+                        "date": "2018-07-19T00:00:00.000",
+                        "description": "CREDIT TRANSFER",
+                        "amount": 1000000,
+                        "serial": 2,
+                        "postedDateTime": "2018-07-19T12:01:47.000",
+                        "type": "Credit",
+                        "runningBalance": {
+                            "currency": "KES",
+                            "amount": 1001144.57
+                        }
+                    }
+                ]
+            }
+
+        """
+        payload = {
+            "countryCode": countryCode,
+            "accountNumber": accountNumber,
+            "fromDate": fromDate,
+            "toDate": toDate,
+            "limit": limit,
+        }
+
+        accountNumber = payload.get("accountNumber")
+        countryCode = payload.get("countryCode")
+        toDate = payload.get("toDate")
+        headers = {
+            "Authorization": self.authorization_token,
+            "Content-Type": "application/json",
+            "signature": self.signature((accountNumber, countryCode, toDate)),
+        }
+        if self.env == "sandbox":
+            resource = "/account-test/v2/accounts/fullstatement/"
+            url = self.sandbox_url + resource
+        else:
+            resource = "/account/v2/accounts/fullstatement/"
+            url = self.live_url + resource
+        response = requests.post(url, headers=headers, data=payload)
+        return handle_response(response)
+
 
 def generate_key_pair():
     """
