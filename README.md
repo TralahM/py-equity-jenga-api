@@ -32,6 +32,39 @@ $ git clone https://github.com/TralahM/py-equity-jenga-api.git
 $ cd py-equity-jenga-api
 ```
 
+# Supported Pesa Link Patner Banks
+![](images/victoria_commercial_bank.png)
+![](images/stanchart_bank.png)
+![](images/stanbic_bank.png)
+![](images/spire_bank.png)
+![](images/sidian_bank.png)
+![](images/prime_bank.png)
+![](images/paramount_bank.png)
+![](images/nic_bank.png)
+![](images/national_bank.png)
+![](images/middle_east_bank.png)
+![](images/kwft_bank.png)
+![](images/kcb.png)
+![](images/jamii_bora_bank.png)
+![](images/i_m_bank.png)
+![](images/habib_bank.png)
+![](images/gulf_african_bank.png)
+![](images/guardian_bank.png)
+![](images/guaranty_trust_bank.png)
+![](images/first_community_bank.png)
+![](images/family_bank.png)
+![](images/equity_bank.png)
+![](images/dtb.png)
+![](images/credit_bank.png)
+![](images/coop_bank.png)
+![](images/consolidated_bank.png)
+![](images/cba.png)
+![](images/citibank.png)
+![](images/barclays.png)
+![](images/bank_of_africa.png)
+![](images/abc.png)
+
+
 # Contributing
 [See the Contributing File](CONTRIBUTING.rst)
 
