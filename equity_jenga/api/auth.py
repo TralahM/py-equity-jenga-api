@@ -7,7 +7,7 @@ from Crypto.Hash import SHA256
 from .exceptions import handle_response, generate_reference
 
 
-class JengaAuth:
+class JengaAPI:
     """
     Jenga API CORE  Class Representation
 
@@ -32,7 +32,7 @@ class JengaAuth:
     .. code-block:: python
 
         from equity_jenga import api
-        jengabase = api.auth.JengaApi(
+        jengabase = api.auth.JengaAPI(
         api_key="Basic TofFGUeU9y448idLCKVAe35LmAtLU9y448idLCKVAe35LmAtL",
         password="TofFGUeU9y448idLCKVAe35LmAtL",
         merchant_code="4144142283",

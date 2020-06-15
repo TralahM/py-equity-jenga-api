@@ -35,5 +35,5 @@ Using The APIs
 
 Creating JengaRequest objects
 +++++++++++++++++++++++++++++++
-By Design all API classes provided inherit from the `equity_jenga.api.auth.JengaAuth` class which takes the following parameters:
+By Design all API classes provided inherit from the `equity_jenga.api.auth.JengaAPI` class which takes the following parameters:
 
