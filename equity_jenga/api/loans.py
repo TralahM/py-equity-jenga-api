@@ -514,15 +514,20 @@ class CreditScore(JengaAuth):
 
         """
         payload = {"customer": customer, "bureau": bureau, "loan": loan}
-        headers = self.authenticate(
-            dateOfBirth=payload.get("customer")[0].get("dateOfBirth"),
-            merchantCode=self.merchant_code,
-            documentNumber=payload.get("customer")[0]
-            .get("identityDocument")
-            .get("documentNumber"),
+        dateOfBirth = payload.get("customer")[0].get("dateOfBirth")
+        merchantCode = self.merchant_code
+        documentNumber = (
+            payload.get("customer")[0].get(
+                "identityDocument").get("documentNumber")
         )
+        headers = {
+            "Authorization": self.authentication_token,
+            "Content-Type": "application/json",
+            "signature": self.signature((dateOfBirth, merchantCode, documentNumber)),
+        }
         if self.env == "sandbox":
             url = self.sandbox_url + "/customer-test/v2/creditinfo"
-            response = requests.post(url=url, headers=headers, data=payload)
-            return handle_response(response)
-        pass
+        else:
+            url = self.live_url + "/customer/v2/creditinfo"
+        response = requests.post(url=url, headers=headers, data=payload)
+        return handle_response(response)

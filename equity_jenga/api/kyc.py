@@ -112,3 +112,16 @@ class IDSearchVerification(JengaAuth):
         documentNumber = identity.get("documentNumber")
         countryCode = identity.get("countryCode")
         merchantCode = self.merchant_code
+        headers = {
+            "Authorization": self.authorization_token,
+            "Content-Type": "application/json",
+            "signature": self.signature((merchantCode, documentNumber, countryCode)),
+        }
+        data = {"identity": identity}
+        if self.env == "sandbox":
+            url = self.sandbox_url + "/customer-test/v2/identity/verify"
+        else:
+            url = self.live_url + "/customer/v2/identity/verify"
+
+        response = requests.post(url, headers=headers, data=data)
+        return handle_response(response)

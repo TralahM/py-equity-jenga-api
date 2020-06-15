@@ -49,13 +49,18 @@ class Forex(JengaAuth):
 
 
         """
-        headers = self.authenticate()
+        headers = {
+            "Authorization": self.authentication_token,
+            "Content-Type": "application/json",
+        }
         data = {
             "countryCode": countryCode,
             "currencyCode": currencyCode,
         }
         if self.env == "sandbox":
             url = self.sandbox_url + "/transaction-test/v2/foreignexchangerates"
-            response = requests.post(url=url, headers=headers, data=data)
-            return handle_response(response)
-        pass
+        else:
+            url = self.live_url + "/transaction/v2/foreignexchangerates"
+
+        response = requests.post(url=url, headers=headers, data=data)
+        return handle_response(response)

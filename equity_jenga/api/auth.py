@@ -4,7 +4,7 @@ import requests
 from Crypto.PublicKey import RSA
 from Crypto.Signature import PKCS1_v1_5
 from Crypto.Hash import SHA256
-from .exceptions import handle_response
+from .exceptions import handle_response, generate_reference
 
 
 class JengaAuth:
@@ -208,6 +208,718 @@ class JengaAuth:
                 + transactionReference
             )
         response = requests.get(url, headers=headers)
+        return handle_response(response)
+
+    def purchase_airtime(self, customer: dict, airtime: dict) -> dict:
+        """
+        This gives an application the ability to purchase airtime from any telco in
+        East and Central Africa.
+
+        Example Request
+
+        :Customer::
+
+        .. code-block:: json
+
+            {
+                "countryCode": "KE",
+                "mobileNumber": "0765555131"
+            }
+
+        *countryCode*: the telco's ISO country code
+
+        *mobileNumber*: the mobile number you are purchasing airtime for
+
+        :Airtime::
+
+
+        .. code-block:: json
+
+            {
+                "amount": "100",
+                "reference": "692194625798",
+                "telco": "Equitel"
+            }
+
+        *telco* the telco/provider. For example: Equitel, Safaricom , Airtel.
+
+        *reference* your transaction references. Should always be a 12 digit string
+
+        *amount* the airtime amount string
+
+
+        Example Response
+
+        .. code-block:: json
+
+            {
+                "referenceNumber": "4568899373748",
+                "status": "SUCCESS"
+            }
+
+        """
+
+        airtime["reference"] = generate_reference()
+        payload = {
+            "customer": customer,
+            "airtime": airtime,
+        }
+        merchantCode = (self.merchant_code,)
+        airtimeTelco = (airtime.get("telco"),)
+        airtimeAmount = (airtime.get("amount"),)
+        airtimeReference = (airtime.get("reference"),)
+        fields = (merchantCode, airtimeTelco, airtimeAmount, airtimeReference)
+        headers = {
+            "Authorization": self.authentication_token,
+            "Content-Type": "application/json",
+            "signature": self.signature(fields),
+        }
+        if self.env == "sandbox":
+            url = self.sandbox_url + "/transaction-test/v2/airtime"
+            response = requests.post(url=url, headers=headers, data=payload)
+            return handle_response(response)
+        else:
+            url = self.live_url + "/transaction/v2/airtime"
+            response = requests.post(url=url, headers=headers, data=payload)
+            return handle_response(response)
+
+    def kyc_search_verify(self, identity: dict):
+        """
+        Params:
+
+        :identitiy:
+            :documentType: string the document type of the customer.  for example ID, PASSPORT, ALIENID
+
+            :firstName: string first name as per identity document type
+
+            :lastName: string last name as per identity document type
+
+            :dateOfBirth: string optional date in YYYY-MM-DD format
+
+            :documentNumber: string the document id number
+
+            :countryCode: string the country in which the document relates to (only KE and RW enabled for now)
+
+
+        Example Reponse
+
+        .. code-block:: json
+
+            {
+                "identity": {
+                    "customer": {
+                        "fullName": "John Doe ",
+                        "firstName": "John",
+                        "middlename": "",
+                        "lastName": "Doe",
+                        "ShortName": "John",
+                        "birthDate": "1900-01-01T00:00:00",
+                        "birthCityName": "",
+                        "deathDate": "",
+                        "gender": "",
+                        "faceImage": "/9j/4AAQSkZJRgABAAEAYABgA+H8qr6n4e1O71SGFbV/sEOF3O6/N/eb71d/FGkaBVXaq9KfRRRRRUMsKSIdyr0r/9k=",
+                        "occupation": "",
+                        "nationality": "Refugee"
+                    },
+                    "documentType": "ALIEN ID",
+                    "documentNumber": "654321",
+                    "documentSerialNumber": "100500425",
+                    "documentIssueDate": "2002-11-29T12:00:00",
+                    "documentExpirationDate": "2004-11-28T12:00:00",
+                    "IssuedBy": "REPUBLIC OF KENYA",
+                    "additionalIdentityDetails": [
+                        {
+                            "documentNumber": "",
+                            "documentType": "",
+                            "issuedBy": ""
+                        }
+                    ],
+                    "address": {
+                        "provinceName": " ",
+                        "districtName": "",
+                        "locationName": "",
+                        "subLocationName": "",
+                        "villageName": ""
+                    }
+                }
+            }
+        """
+        documentNumber = identity.get("documentNumber")
+        countryCode = identity.get("countryCode")
+        merchantCode = self.merchant_code
+        headers = {
+            "Authorization": self.authorization_token,
+            "Content-Type": "application/json",
+            "signature": self.signature((merchantCode, documentNumber, countryCode)),
+        }
+        data = {"identity": identity}
+        if self.env == "sandbox":
+            url = self.sandbox_url + "/customer-test/v2/identity/verify"
+        else:
+            url = self.live_url + "/customer/v2/identity/verify"
+
+        response = requests.post(url, headers=headers, data=data)
+        return handle_response(response)
+
+    def loans_credit_score(self, customer: list, bureau: dict, loan: dict) -> dict:
+        """
+        Example Request Payload
+        customer,bureau,loan
+
+        .. code-block:: json
+
+            {
+                "customer": [{
+                    "id": "",
+                    "fullName": "",
+                    "firstName": "",
+                    "lastName": "",
+                    "shortName": "",
+                    "title": "",
+                    "mobileNumber": "",
+                    "dateOfBirth": "1999-01-31",
+                    "identityDocument": {
+                        "documentType": "NationalID",
+                        "documentNumber": "12365478"
+                    }
+                }],
+                "bureau": {
+                    "reportType": "Mobile",
+                    "countryCode": "KE"
+                },
+                "loan": {
+                    "amount": "5000"
+                }
+            }
+
+        Example Response
+
+        .. code-block:: json
+
+            {
+                "Person": {
+                    "PersonName": {},
+                    "IdentityDocument": {
+                        "IdentityDocumentID": "1234568",
+                        "IdentityDocumentType": "National ID"
+                    }
+                },
+                "CreditAccountsSummary": [
+                    {
+                        "AccountIdentifier": {
+                            "AccountID": "0011547896523",
+                            "AccountCurrency": {}
+                        },
+                        "AccountType": "36",
+                        "AccountOpenDate": "17012014",
+                        "AccountOwnership": "true",
+                        "Balance": "0.00000",
+                        "DelinquencyStatus": "No delinquency",
+                        "Original_Amount": [
+                            "65000.00000",
+                            "65000.00000"
+                        ],
+                        "PastDueAmount": "0.00000",
+                        "LastPaymentAmount": "5000.00000",
+                        "LastPaymentReceivedDate": "20062014",
+                        "NoofDelayed_Payments": "0",
+                        "PostedDateTime": "30062014",
+                        "AccountStatus": "F",
+                        "LoanAccount": {
+                            "PastDueDate": {},
+                            "LoanHighestDaysInArrears": {}
+                        }
+                    },
+                    {
+                        "AccountIdentifier": {
+                            "AccountID": "0011547896523",
+                            "AccountCurrency": {}
+                        },
+                        "AccountType": "09",
+                        "AccountOpenDate": "09062011",
+                        "AccountOwnership": "true",
+                        "Balance": "106458.00000",
+                        "DelinquencyStatus": "No delinquency",
+                        "Original_Amount": [
+                            "200000.00000",
+                            "200000.00000"
+                        ],
+                        "PastDueAmount": "0.00000",
+                        "LastPaymentAmount": "1667.00000",
+                        "LastPaymentReceivedDate": "15062018",
+                        "NoofDelayed_Payments": "0",
+                        "PostedDateTime": "30062018",
+                        "AccountStatus": "W",
+                        "LoanAccount": {
+                            "PastDueDate": {},
+                            "LoanHighestDaysInArrears": {}
+                        }
+                    },
+                    {
+                        "AccountIdentifier": {
+                            "AccountID": "0011547896523",
+                            "AccountCurrency": {}
+                        },
+                        "AccountType": "36",
+                        "AccountOpenDate": "14052014",
+                        "AccountOwnership": "true",
+                        "Balance": "0.00000",
+                        "DelinquencyStatus": "No delinquency",
+                        "Original_Amount": [
+                            "80000.00000",
+                            "80000.00000"
+                        ],
+                        "PastDueAmount": "0.00000",
+                        "LastPaymentAmount": "6960.00000",
+                        "LastPaymentReceivedDate": "15122014",
+                        "NoofDelayed_Payments": "0",
+                        "PostedDateTime": "31122014",
+                        "AccountStatus": "F",
+                        "LoanAccount": {
+                            "PastDueDate": {},
+                            "LoanHighestDaysInArrears": {}
+                        }
+                    },
+                    {
+                        "AccountIdentifier": {
+                            "AccountID": "0011547896523",
+                            "AccountCurrency": {}
+                        },
+                        "AccountType": "36",
+                        "AccountOpenDate": "22092014",
+                        "AccountOwnership": "true",
+                        "Balance": "0.00000",
+                        "DelinquencyStatus": "No delinquency",
+                        "Original_Amount": [
+                            "1000.00000",
+                            "1000.00000"
+                        ],
+                        "PastDueAmount": "0.00000",
+                        "LastPaymentAmount": "1000.00000",
+                        "LastPaymentReceivedDate": "15102014",
+                        "NoofDelayed_Payments": "0",
+                        "PostedDateTime": "31102014",
+                        "AccountStatus": "F",
+                        "LoanAccount": {
+                            "PastDueDate": {},
+                            "LoanHighestDaysInArrears": {}
+                        }
+                    },
+                    {
+                        "AccountIdentifier": {
+                            "AccountID": "0011547896523",
+                            "AccountCurrency": {}
+                        },
+                        "AccountType": "36",
+                        "AccountOpenDate": "29122014",
+                        "AccountOwnership": "true",
+                        "Balance": "0.00000",
+                        "DelinquencyStatus": "No delinquency",
+                        "Original_Amount": [
+                            "80000.00000",
+                            "80000.00000"
+                        ],
+                        "PastDueAmount": "0.00000",
+                        "LastPaymentAmount": "6666.67000",
+                        "LastPaymentReceivedDate": "16032015",
+                        "NoofDelayed_Payments": "0",
+                        "PostedDateTime": "31032015",
+                        "AccountStatus": "F",
+                        "LoanAccount": {
+                            "PastDueDate": {},
+                            "LoanHighestDaysInArrears": {}
+                        }
+                    },
+                    {
+                        "AccountIdentifier": {
+                            "AccountID": "0011547896523",
+                            "AccountCurrency": {}
+                        },
+                        "AccountType": "36",
+                        "AccountOpenDate": "20032015",
+                        "AccountOwnership": "true",
+                        "Balance": "0.00000",
+                        "DelinquencyStatus": "No delinquency",
+                        "Original_Amount": [
+                            "80000.00000",
+                            "80000.00000"
+                        ],
+                        "PastDueAmount": "0.00000",
+                        "LastPaymentAmount": "6666.67000",
+                        "LastPaymentReceivedDate": "16012016",
+                        "NoofDelayed_Payments": "0",
+                        "PostedDateTime": "31012016",
+                        "AccountStatus": "F",
+                        "LoanAccount": {
+                            "PastDueDate": {},
+                            "LoanHighestDaysInArrears": {}
+                        }
+                    },
+                    {
+                        "AccountIdentifier": {
+                            "AccountID": "N:000019:01:2015",
+                            "AccountCurrency": {}
+                        },
+                        "AccountType": "23",
+                        "AccountOpenDate": "06012015",
+                        "AccountOwnership": "false",
+                        "Balance": "0.00000",
+                        "DelinquencyStatus": "No delinquency",
+                        "Original_Amount": [
+                            "300000.00000",
+                            "300000.00000"
+                        ],
+                        "PastDueAmount": "0.00000",
+                        "LastPaymentAmount": "20562.00000",
+                        "LastPaymentReceivedDate": "27102017",
+                        "NoofDelayed_Payments": "0",
+                        "PostedDateTime": "31122017",
+                        "AccountStatus": "F",
+                        "LoanAccount": {
+                            "PastDueDate": {},
+                            "LoanHighestDaysInArrears": {}
+                        }
+                    },
+                    {
+                        "AccountIdentifier": {
+                            "AccountID": "068-P-12365478",
+                            "AccountCurrency": {}
+                        },
+                        "AccountType": "04",
+                        "AccountOpenDate": "13102011",
+                        "AccountOwnership": "true",
+                        "Balance": "39844.00000",
+                        "DelinquencyStatus": "No delinquency",
+                        "Original_Amount": [
+                            "40000.00000",
+                            "40000.00000"
+                        ],
+                        "PastDueAmount": "0.00000",
+                        "LastPaymentAmount": "2500.00000",
+                        "LastPaymentReceivedDate": "16072018",
+                        "NoofDelayed_Payments": "0",
+                        "PostedDateTime": "31072018",
+                        "AccountStatus": "W",
+                        "LoanAccount": {
+                            "PastDueDate": {},
+                            "LoanHighestDaysInArrears": {}
+                        }
+                    },
+                    {
+                        "AccountIdentifier": {
+                            "AccountID": "068-P-25417854",
+                            "AccountCurrency": {}
+                        },
+                        "AccountType": "04",
+                        "AccountOpenDate": "19082015",
+                        "AccountOwnership": "true",
+                        "Balance": "0.00000",
+                        "DelinquencyStatus": "No delinquency",
+                        "Original_Amount": [
+                            "50000.00000",
+                            "50000.00000"
+                        ],
+                        "PastDueAmount": "0.00000",
+                        "LastPaymentAmount": "2500.00000",
+                        "LastPaymentReceivedDate": "13022018",
+                        "NoofDelayed_Payments": "0",
+                        "PostedDateTime": "31072018",
+                        "AccountStatus": "F",
+                        "LoanAccount": {
+                            "PastDueDate": {},
+                            "LoanHighestDaysInArrears": {}
+                        }
+                    },
+                    {
+                        "AccountIdentifier": {
+                            "AccountID": "0011547896523",
+                            "AccountCurrency": {}
+                        },
+                        "AccountType": "23",
+                        "AccountOpenDate": "02022016",
+                        "AccountOwnership": "true",
+                        "Balance": "0.00000",
+                        "DelinquencyStatus": "No delinquency",
+                        "Original_Amount": [
+                            "80000.00000",
+                            "80000.00000"
+                        ],
+                        "PastDueAmount": "0.00000",
+                        "LastPaymentAmount": "6666.67000",
+                        "LastPaymentReceivedDate": "16122016",
+                        "NoofDelayed_Payments": "0",
+                        "PostedDateTime": "31012017",
+                        "AccountStatus": "F",
+                        "LoanAccount": {
+                            "PastDueDate": {},
+                            "LoanHighestDaysInArrears": {}
+                        }
+                    },
+                    {
+                        "AccountIdentifier": {
+                            "AccountID": "2569774",
+                            "AccountCurrency": {}
+                        },
+                        "AccountType": "12",
+                        "AccountOpenDate": "02062016",
+                        "AccountOwnership": "false",
+                        "Balance": "0.00000",
+                        "DelinquencyStatus": "No delinquency",
+                        "Original_Amount": [
+                            "3000.00000",
+                            "3000.00000"
+                        ],
+                        "PastDueAmount": "0.00000",
+                        "LastPaymentAmount": "3726.00000",
+                        "LastPaymentReceivedDate": "26122016",
+                        "NoofDelayed_Payments": "0",
+                        "PostedDateTime": "30062018",
+                        "AccountStatus": "F",
+                        "LoanAccount": {
+                            "PastDueDate": {},
+                            "LoanHighestDaysInArrears": {}
+                        }
+                    },
+                    {
+                        "AccountIdentifier": {
+                            "AccountID": "11110571749286",
+                            "AccountCurrency": {}
+                        },
+                        "AccountType": "23",
+                        "AccountOpenDate": "14022017",
+                        "AccountOwnership": "true",
+                        "Balance": "0.00000",
+                        "DelinquencyStatus": "No delinquency",
+                        "Original_Amount": [
+                            "120000.00000",
+                            "120000.00000"
+                        ],
+                        "PastDueAmount": "0.00000",
+                        "LastPaymentAmount": "10000.00000",
+                        "LastPaymentReceivedDate": "15112017",
+                        "NoofDelayed_Payments": "0",
+                        "PostedDateTime": "31122017",
+                        "AccountStatus": "F",
+                        "LoanAccount": {
+                            "PastDueDate": {},
+                            "LoanHighestDaysInArrears": {}
+                        }
+                    },
+                    {
+                        "AccountIdentifier": {
+                            "AccountID": "JKCBDL1724301111",
+                            "AccountCurrency": {}
+                        },
+                        "AccountType": "12",
+                        "AccountOpenDate": "30082017",
+                        "AccountOwnership": "false",
+                        "Balance": "0.00000",
+                        "DelinquencyStatus": "No delinquency",
+                        "Original_Amount": [
+                            "5400.00000",
+                            "5400.00000"
+                        ],
+                        "PastDueAmount": "0.00000",
+                        "LastPaymentAmount": "None",
+                        "LastPaymentReceivedDate": "None",
+                        "NoofDelayed_Payments": "0",
+                        "PostedDateTime": "13122017",
+                        "AccountStatus": "A",
+                        "LoanAccount": {
+                            "PastDueDate": {},
+                            "LoanHighestDaysInArrears": {}
+                        }
+                    },
+                    {
+                        "AccountIdentifier": {
+                            "AccountID": "BCKMLD1802229762",
+                            "AccountCurrency": {}
+                        },
+                        "AccountType": "12",
+                        "AccountOpenDate": "08042018",
+                        "AccountOwnership": "false",
+                        "Balance": "0.00000",
+                        "DelinquencyStatus": "No delinquency",
+                        "Original_Amount": [
+                            "5400.00000",
+                            "5400.00000"
+                        ],
+                        "PastDueAmount": "0.00000",
+                        "LastPaymentAmount": "None",
+                        "LastPaymentReceivedDate": "11062018",
+                        "NoofDelayed_Payments": "0",
+                        "PostedDateTime": "21062018",
+                        "AccountStatus": "A",
+                        "LoanAccount": {
+                            "PastDueDate": {},
+                            "LoanHighestDaysInArrears": {}
+                        }
+                    },
+                    {
+                        "AccountIdentifier": {
+                            "AccountID": "MKDLCB1814647289",
+                            "AccountCurrency": {}
+                        },
+                        "AccountType": "12",
+                        "AccountOpenDate": "26052018",
+                        "AccountOwnership": "false",
+                        "Balance": "5400.00000",
+                        "DelinquencyStatus": "No delinquency",
+                        "Original_Amount": [
+                            "5400.00000",
+                            "5400.00000"
+                        ],
+                        "PastDueAmount": "0.00000",
+                        "LastPaymentAmount": "5400.00000",
+                        "LastPaymentReceivedDate": "26052018",
+                        "NoofDelayed_Payments": "0",
+                        "PostedDateTime": "31052018",
+                        "AccountStatus": "W",
+                        "LoanAccount": {
+                            "PastDueDate": {},
+                            "LoanHighestDaysInArrears": {}
+                        }
+                    },
+                    {
+                        "AccountIdentifier": {
+                            "AccountID": "MKCDLB1818039369",
+                            "AccountCurrency": {}
+                        },
+                        "AccountType": "12",
+                        "AccountOpenDate": "29062018",
+                        "AccountOwnership": "false",
+                        "Balance": "2150.00000",
+                        "DelinquencyStatus": "No delinquency",
+                        "Original_Amount": [
+                            "2150.00000",
+                            "2150.00000"
+                        ],
+                        "PastDueAmount": "0.00000",
+                        "LastPaymentAmount": "2150.00000",
+                        "LastPaymentReceivedDate": "29062018",
+                        "NoofDelayed_Payments": "0",
+                        "PostedDateTime": "30062018",
+                        "AccountStatus": "W",
+                        "LoanAccount": {
+                            "PastDueDate": {},
+                            "LoanHighestDaysInArrears": {}
+                        }
+                    },
+                    {
+                        "AccountIdentifier": {
+                            "AccountID": "MDLBBCK1821123688",
+                            "AccountCurrency": {}
+                        },
+                        "AccountType": "12",
+                        "AccountOpenDate": "29072018",
+                        "AccountOwnership": "false",
+                        "Balance": "2150.00000",
+                        "DelinquencyStatus": "No delinquency",
+                        "Original_Amount": [
+                            "2150.00000",
+                            "2150.00000"
+                        ],
+                        "PastDueAmount": "0.00000",
+                        "LastPaymentAmount": "2150.00000",
+                        "LastPaymentReceivedDate": "30072018",
+                        "NoofDelayed_Payments": "0",
+                        "PostedDateTime": "31072018",
+                        "AccountStatus": "W",
+                        "LoanAccount": {
+                            "PastDueDate": {},
+                            "LoanHighestDaysInArrears": {}
+                        }
+                    }
+                ],
+                "CreditBureau": {
+                    "score": "772",
+                    "creditApplications90Days": "0",
+                    "creditApplications180Days": "0",
+                    "creditApplications365Days": "0",
+                    "crbEnqiry90Days": "0",
+                    "crbEnqiry180Days": "0",
+                    "crbEnqiry365Days": "0",
+                    "BouncedCheques90Days": "0",
+                    "BouncedCheques180Days": "0",
+                    "BouncedCheques365Days": "0",
+                    "AcctNonPerformingCurrent": "0",
+                    "AcctNonPerformingHisto": "0",
+                    "AcctPerformingCurrent": "15",
+                    "AcctPerformingHisto": "NaN",
+                    "IsFraud": "false",
+                    "isGuarantor": "false",
+                    "delinquency_code": "No delinquency"
+                }
+            }
+
+        """
+        payload = {"customer": customer, "bureau": bureau, "loan": loan}
+        dateOfBirth = payload.get("customer")[0].get("dateOfBirth")
+        merchantCode = self.merchant_code
+        documentNumber = (
+            payload.get("customer")[0].get(
+                "identityDocument").get("documentNumber")
+        )
+        headers = {
+            "Authorization": self.authentication_token,
+            "Content-Type": "application/json",
+            "signature": self.signature((dateOfBirth, merchantCode, documentNumber)),
+        }
+        if self.env == "sandbox":
+            url = self.sandbox_url + "/customer-test/v2/creditinfo"
+        else:
+            url = self.live_url + "/customer/v2/creditinfo"
+        response = requests.post(url=url, headers=headers, data=payload)
+        return handle_response(response)
+
+    def get_forex_rates(self, countryCode: str, currencyCode: str) -> dict:
+        """
+        Params
+
+        :countryCode:: the country for which rates are being requested.
+            Valid values are KE, TZ, UG, RW.
+
+        :currencyCode:: the currency code of the currency
+            that is being converted from in ISO 4217 format
+
+        Example Request
+
+        .. code-block:: json
+
+            {
+            "countryCode": "KE",
+            "currencyCode": "USD"
+            }
+
+
+        Example Response
+        :currencyRates:: list of conversion rates for major currencies
+
+        .. code-block:: json
+
+            {
+            "currencyRates":[],
+            "fromCurrency": "KES",
+            "rate":101.3,
+            "toCurrency": "USD"
+            }
+
+
+        """
+        headers = {
+            "Authorization": self.authentication_token,
+            "Content-Type": "application/json",
+        }
+        data = {
+            "countryCode": countryCode,
+            "currencyCode": currencyCode,
+        }
+        if self.env == "sandbox":
+            url = self.sandbox_url + "/transaction-test/v2/foreignexchangerates"
+        else:
+            url = self.live_url + "/transaction/v2/foreignexchangerates"
+
+        response = requests.post(url=url, headers=headers, data=data)
         return handle_response(response)
 
 

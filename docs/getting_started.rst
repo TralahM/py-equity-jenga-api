@@ -37,6 +37,3 @@ Creating JengaRequest objects
 +++++++++++++++++++++++++++++++
 By Design all API classes provided inherit from the `equity_jenga.api.auth.JengaAuth` class which takes the following parameters:
 
-.. autoclass:: equity_jenga.api.auth.JengaAuth
-   :members:
-   :undoc-members:
