@@ -80,7 +80,7 @@ class JengaAuth:
         if self.env == "sandbox":
             url = self.sandbox_url + "/identity-test/v2/token"
         else:
-            url = self.live_url + "/identity-test/v2/token"
+            url = self.live_url + "/identity/v2/token"
         headers = {"Authorization": self.api_key}
         body = dict(username=self._username, password=self._password)
         response = requests.post(url, headers=headers, data=body)
@@ -105,6 +105,88 @@ class JengaAuth:
         digest.update(data)
         sign = signer.sign(digest)
         return base64.b64encode(sign)
+
+    def get_pesalink_linked_accounts(self, mobile_number):
+        headers = {
+            "Authorization": self.authorization_token,
+            "Content-Type": "application/json",
+        }
+        data = {
+            "mobileNumber": mobile_number,
+        }
+        if self.env == "sandbox":
+            url = self.sandbox_url + "/transaction-test/v2/pesalink/inquire"
+        else:
+            url = self.live_url + "/transaction/v2/pesalink/inquire"
+        response = requests.post(url, headers=headers, data=data)
+        return handle_response(response)
+
+    def get_transaction_status(self, requestId, transferDate):
+        headers = {
+            "Authorization": self.authorization_token,
+            "Content-Type": "application/json",
+        }
+        data = {
+            "requestId": requestId,
+            "destination": {"type": "M-Pesa"},
+            "transfer": {"date": transferDate},
+        }
+        if self.env == "sandbox":
+            url = self.sandbox_url + "/transaction-test/v2/b2c/status/query"
+        else:
+            url = self.live_url + "/transaction/v2/b2c/status/query"
+        response = requests.post(url, headers=headers, data=data)
+        return handle_response(response)
+
+    def get_all_eazzypay_merchants(self, numPages=1, per_page=10):
+        headers = {"Authorization": self.authorization_token}
+        params = {"page": numPages, "per_page": per_page}
+        if self.env == "sandbox":
+            url = self.sandbox_url + "/transaction-test/v2/merchants"
+        else:
+            url = self.live_url + "/transaction/v2/merchants"
+        response = requests.get(url, headers=headers, params=params)
+        return handle_response(response)
+
+    def get_all_billers(self, numPages=1, per_page=10):
+        headers = {"Authorization": self.authorization_token}
+        params = {"page": numPages, "per_page": per_page}
+        if self.env == "sandbox":
+            url = self.sandbox_url + "/transaction-test/v2/billers"
+        else:
+            url = self.live_url + "/transaction/v2/billers"
+        response = requests.get(url, headers=headers, params=params)
+        return handle_response(response)
+
+    def get_payment_status(self, transactionReference):
+        headers = {"Authorization": self.authorization_token}
+        if self.env == "sandbox":
+            url = (
+                self.sandbox_url
+                + "/transaction-test/v2/payments/"
+                + transactionReference
+            )
+        else:
+            url = self.live_url + "/transaction/v2/payments/" + transactionReference
+        response = requests.get(url, headers=headers)
+        return handle_response(response)
+
+    def get_transaction_details(self, transactionReference):
+        headers = {"Authorization": self.authorization_token}
+        if self.env == "sandbox":
+            url = (
+                self.sandbox_url
+                + "/transaction-test/v2/payments/details/"
+                + transactionReference
+            )
+        else:
+            url = (
+                self.live_url
+                + "/transaction/v2/payments/details/"
+                + transactionReference
+            )
+        response = requests.get(url, headers=headers)
+        return handle_response(response)
 
 
 def generate_key_pair():
