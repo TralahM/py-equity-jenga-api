@@ -5,6 +5,7 @@ from Crypto.PublicKey import RSA
 from Crypto.Signature import PKCS1_v1_5
 from Crypto.Hash import SHA256
 from .exceptions import handle_response, generate_reference
+from . import helpers
 
 
 class JengaAPI:
@@ -61,9 +62,11 @@ class JengaAPI:
         self.live_url = live_url
         self.private_key = private_key
         self.merchant_code = merchant_code
+        self._last_auth = None
+        self._prev_token = None
 
     @property
-    def authorization_token(self):
+    def authorization_token(self) -> str:
         """
         .. code-block:: json
 
@@ -74,9 +77,19 @@ class JengaAPI:
             "access_token": "ceTo5RCpluTfGn9B3OZXnnQkDVKM"
             }
 
-        Returns a str like "Bearer ceTo5RCpluTfGn9B3OZXnnQkDVKM"
+        Returns a str like
+
+        ..code-block:: python
+
+            "Bearer ceTo5RCpluTfGn9B3OZXnnQkDVKM"
 
         """
+        if (
+            self._last_auth is not None
+            and self._prev_token is not None
+            and not helpers.token_expired(self._last_auth)
+        ):
+            return self._prev_token
         if self.env == "sandbox":
             url = self.sandbox_url + "/identity-test/v2/token"
         else:
@@ -85,7 +98,10 @@ class JengaAPI:
         body = dict(username=self._username, password=self._password)
         response = requests.post(url, headers=headers, data=body)
         response = handle_response(response)
-        return "Bearer " + response.get("access_token")
+        token = "Bearer " + response.get("access_token")
+        self._prev_token = token
+        self._last_auth = helpers.timenow()
+        return token
 
     def signature(self, request_hash_fields: tuple):
         """
@@ -857,8 +873,7 @@ class JengaAPI:
         dateOfBirth = payload.get("customer")[0].get("dateOfBirth")
         merchantCode = self.merchant_code
         documentNumber = (
-            payload.get("customer")[0].get(
-                "identityDocument").get("documentNumber")
+            payload.get("customer")[0].get("identityDocument").get("documentNumber")
         )
         headers = {
             "Authorization": self.authentication_token,
