@@ -33,7 +33,7 @@ class JengaAPI:
     .. code-block:: python
 
         from equity_jenga import api
-        jengabase = api.auth.JengaAPI(
+        jengaApi = api.auth.JengaAPI(
         api_key="Basic TofFGUeU9y448idLCKVAe35LmAtLU9y448idLCKVAe35LmAtL",
         password="TofFGUeU9y448idLCKVAe35LmAtL",
         merchant_code="4144142283",
@@ -47,7 +47,7 @@ class JengaAPI:
         api_key: str,
         password: str,
         merchant_code: str,
-        env: str,
+        env="sandbox",
         private_key=os.path.expanduser("~") + "/.JengaApi/keys/privatekey.pem",
         sandbox_url="https://sandbox.jengahq.io",
         live_url="https://api.jengahq.io",
@@ -62,22 +62,15 @@ class JengaAPI:
         self.live_url = live_url
         self.private_key = private_key
         self.merchant_code = merchant_code
+        self.env = env
         self._last_auth = None
         self._prev_token = None
 
     @property
     def authorization_token(self) -> str:
         """
-        .. code-block:: json
 
-            {
-            "token_type": "bearer",
-            "issued_at": "1443102144106",
-            "expires_in": "3599",
-            "access_token": "ceTo5RCpluTfGn9B3OZXnnQkDVKM"
-            }
-
-        Returns a str like
+        Returns a str like to be used in header as Authorization value
 
         ..code-block:: python
 
@@ -873,7 +866,8 @@ class JengaAPI:
         dateOfBirth = payload.get("customer")[0].get("dateOfBirth")
         merchantCode = self.merchant_code
         documentNumber = (
-            payload.get("customer")[0].get("identityDocument").get("documentNumber")
+            payload.get("customer")[0].get(
+                "identityDocument").get("documentNumber")
         )
         headers = {
             "Authorization": self.authentication_token,
