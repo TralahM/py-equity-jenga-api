@@ -344,11 +344,12 @@ def handle_response(response):
     Handles Responses From the JengaHQ API and Raises Exceptions appropriately
     as errors occur and returns a `dict` object from the `json` response
     """
-    response.response_status()
+    # print(response.status)
     resp = response.json()
-    if resp["response_status"] == "error":
+    print(resp)
+    if resp.get("error"):
         raise requests.exceptions.RequestException(
-            resp["response_code"] + " : " + resp["response_msg"]
+            resp["code"] + " : " + resp["message"]
         )
     else:
         return response.json()
