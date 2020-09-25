@@ -109,4 +109,14 @@ env/
 .idea/
 
 .*~
-pip-wheel-metadata/
+
+# Jekyll Documentation
+_site
+.sass-cache
+.jekyll-metadata
+.jekyll-cache/*
+.jekyll-cache/*
+
+# nohup.out files
+*.out
+stime
