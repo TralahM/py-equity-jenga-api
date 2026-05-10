@@ -1,5 +1,9 @@
 Equity\_Jenga Package
 =========================
+.. automodule:: equity_jenga.api
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
 Jenga Submodules
 -----------------------
